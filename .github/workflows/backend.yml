@@ -55,4 +55,4 @@ jobs:
 
       - name: Restart rollout
         run: |
-          kubectl rollout status deployment/product-service -n ecommerce
+          kubectl rollout restart deployment/product-service -n ecommerce
