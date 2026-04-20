@@ -1,0 +1,17 @@
+# Dev profile overrides — used with: ./gradlew bootRun --args='--spring.profiles.active=dev'
+spring:
+  jpa:
+    show-sql: true
+
+  # LocalStack S3 endpoint override for local development
+  # Start with: docker compose up (see docker-compose.yml)
+aws:
+  region: us-east-1
+  s3:
+    endpoint: http://localhost:4566      # LocalStack endpoint
+    bucket-name: amcart-product-images-dev
+
+logging:
+  level:
+    com.amcart: DEBUG
+    software.amazon.awssdk: WARN
