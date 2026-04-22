@@ -1,16 +1,27 @@
-name: Build & Push Backend Image
+name: Build, Tag & Deploy Backend Image
 
 on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: write
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/product-service
+
 jobs:
-  build-and-push:
+  build-and-tag:
+    name: Build, Tag and Push
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.create_tag.outputs.TAG }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -21,6 +32,17 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests
 
+      - name: Create release tag
+        id: create_tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TAG="v$(date +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+          git tag -a "$TAG" -m "CI: release $TAG"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} refs/tags/$TAG
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -29,30 +51,30 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/product-service:latest .
+          docker build -t $IMAGE_NAME:${{ steps.create_tag.outputs.TAG }} .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/product-service:latest
+          docker push $IMAGE_NAME:${{ steps.create_tag.outputs.TAG }}
 
-      # 🔥 NEW STEP: Deploy to EKS
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (staging)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Update kubeconfig
+      - name: Update kubeconfig (staging)
         run: |
           aws eks update-kubeconfig --name ecommerce-cluster --region eu-north-1
 
-      - name: Deploy to EKS
+      - name: Deploy tagged image to staging EKS
         run: |
           kubectl set image deployment/product-service \
-          product-service=${{ secrets.DOCKER_USERNAME }}/product-service:latest \
-          -n ecommerce
+            product-service=$IMAGE_NAME:${{ steps.create_tag.outputs.TAG }} -n ecommerce
+          kubectl rollout status deployment/product-service -n ecommerce
 
-      - name: Restart rollout
-        run: |
-          kubectl rollout restart deployment/product-service -n ecommerce
+# Notes:
+# - The workflow creates a timestamped tag, builds and pushes a tagged Docker image
+#   and deploys that tag to the staging EKS cluster.
+# - Add repository secrets: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
