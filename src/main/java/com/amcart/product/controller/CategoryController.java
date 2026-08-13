@@ -8,6 +8,7 @@ import com.amcart.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,11 @@ import java.util.UUID;
 @Tag(name = "Categories", description = "Product category endpoints")
 public class CategoryController {
 
-    private final CategoryService categoryService;
-    private final ProductService productService;
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private ProductService productService;
 
     @GetMapping
     @Operation(summary = "Get full category tree")
