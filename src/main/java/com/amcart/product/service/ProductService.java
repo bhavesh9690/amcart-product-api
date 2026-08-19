@@ -50,6 +50,14 @@ public class ProductService {
         return productMapper.toResponse(product);
     }
 
+    @Cacheable(cacheNames = "all-products")
+    @Transactional(readOnly = true)
+    public PagedResponse<ProductResponse> getAllProducts(Pageable pageable) {
+        return PagedResponse.from(
+                productRepository.findByActiveTrue(pageable)
+                                 .map(productMapper::toResponse));
+    }
+
     @Cacheable(cacheNames = "featured-products")
     @Transactional(readOnly = true)
     public PagedResponse<ProductResponse> getFeaturedProducts(Pageable pageable) {
@@ -93,7 +101,7 @@ public class ProductService {
     // -----------------------------------------------------------------------
 
     @Transactional
-    @CacheEvict(cacheNames = {"featured-products", "new-arrivals"}, allEntries = true)
+    @CacheEvict(cacheNames = {"all-products", "featured-products", "new-arrivals"}, allEntries = true)
     public ProductResponse createProduct(CreateProductRequest request, MultipartFile image)
             throws IOException {
 
@@ -128,7 +136,7 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"product", "featured-products", "new-arrivals"}, allEntries = true)
+    @CacheEvict(cacheNames = {"product", "all-products", "featured-products", "new-arrivals"}, allEntries = true)
     public ProductResponse updateProduct(UUID id, UpdateProductRequest request, MultipartFile image)
             throws IOException {
 
@@ -165,7 +173,7 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"product", "featured-products", "new-arrivals"}, allEntries = true)
+    @CacheEvict(cacheNames = {"product", "all-products", "featured-products", "new-arrivals"}, allEntries = true)
     public void deleteProduct(UUID id) {
         Product product = productRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + id));

@@ -26,6 +26,15 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @GetMapping
+    @Operation(summary = "Get all active products (paginated)")
+    public ResponseEntity<PagedResponse<ProductResponse>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        return ResponseEntity.ok(productService.getAllProducts(
+                PageRequest.of(page, size, Sort.by("createdAt").descending())));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get product by ID")
     public ResponseEntity<ProductResponse> getById(@PathVariable UUID id) {

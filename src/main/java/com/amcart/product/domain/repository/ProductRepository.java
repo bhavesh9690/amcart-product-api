@@ -18,6 +18,8 @@ public interface ProductRepository
 
     Optional<Product> findByIdAndActiveTrue(UUID id);
 
+    Page<Product> findByActiveTrue(Pageable pageable);
+
     Page<Product> findByFeaturedTrueAndActiveTrue(Pageable pageable);
 
     Page<Product> findByNewArrivalTrueAndActiveTrue(Pageable pageable);
@@ -32,6 +34,6 @@ public interface ProductRepository
            ORDER BY p.createdAt DESC
            """)
     Page<Product> findRelatedProducts(@Param("categoryId") UUID categoryId,
-                                      @Param("excludeId") UUID excludeId,
-                                      Pageable pageable);
+                                     @Param("excludeId") UUID excludeId,
+                                     Pageable pageable);
 }
