@@ -1,80 +1,78 @@
-name: Build, Tag & Deploy Backend Image
+name: Product Service - Build and Push to ECR
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/product-service
+  AWS_REGION: eu-north-1
+  ECR_REPOSITORY: product-service
 
 jobs:
-  build-and-tag:
-    name: Build, Tag and Push
+  build-and-push:
     runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.create_tag.outputs.TAG }}
 
     steps:
+
+      # 1. Checkout source code
       - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Build JAR
-        run: mvn clean package -DskipTests
-
-      - name: Create release tag
-        id: create_tag
+      # 2. Generate image tag
+      # Example: v20260819085618-72fb71c
+      - name: Generate Docker Image Tag
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          TAG="v$(date +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
-          echo "TAG=$TAG" >> $GITHUB_ENV
-          echo "TAG=$TAG" >> $GITHUB_OUTPUT
-          git tag -a "$TAG" -m "CI: release $TAG"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} refs/tags/$TAG
+          IMAGE_TAG="v$(date -u +'%Y%m%d%H%M%S')-${GITHUB_SHA::6}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "Generated image tag: $IMAGE_TAG"
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build Docker Image
-        run: |
-          docker build -t $IMAGE_NAME:${{ steps.create_tag.outputs.TAG }} .
-
-      - name: Push Docker Image
-        run: |
-          docker push $IMAGE_NAME:${{ steps.create_tag.outputs.TAG }}
-
-      - name: Configure AWS credentials (staging)
+      # 3. Configure AWS credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update kubeconfig (staging)
+      # 4. Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 5. Verify ECR repository
+      - name: Verify ECR Repository
         run: |
-          aws eks update-kubeconfig --name ecommerce-cluster --region eu-north-1
+          aws ecr describe-repositories \
+            --repository-name $ECR_REPOSITORY \
+            --region $AWS_REGION
 
-      - name: Deploy tagged image to staging EKS
+      # 6. Build Docker image
+      - name: Build Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          kubectl set image deployment/product-service \
-            product-service=$IMAGE_NAME:${{ steps.create_tag.outputs.TAG }} -n ecommerce
-          kubectl rollout status deployment/product-service -n ecommerce
+          docker build \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            .
 
-# Notes:
-# - The workflow creates a timestamped tag, builds and pushes a tagged Docker image
-#   and deploys that tag to the staging EKS cluster.
-# - Add repository secrets: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
+      # 7. Push Docker image to ECR
+      - name: Push Docker Image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker push \
+            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      # 8. Display image URI
+      - name: Display Image URI
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          echo "=========================================="
+          echo "Docker image pushed successfully"
+          echo "=========================================="
+          echo "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
