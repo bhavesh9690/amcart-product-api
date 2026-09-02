@@ -110,17 +110,17 @@ INSERT INTO products (id, name, slug, description, price, sale_price, brand_id, 
 -- ── Product Images ────────────────────────────────────────────────────────────
 INSERT INTO product_images (id, product_id, s3_key, cdn_url, variant, display_order, is_primary) VALUES
     (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000001', 'products/technova-x12/main.jpg',      'https://cdn.example.com/products/technova-x12/main.jpg',      'MAIN',    0, TRUE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000001', 'products/technova-x12/thumb.jpg',     'https://cdn.example.com/products/technova-x12/thumb.jpg',     'THUMB',   0, FALSE),
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000001', 'products/technova-x12/thumb.jpg',     'https://d2g7rlpiy2vv8h.cloudfront.net/phone.jpg',     'THUMB',   0, FALSE),
     (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000002', 'products/technova-probook/main.jpg',  'https://cdn.example.com/products/technova-probook/main.jpg',  'MAIN',    0, TRUE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000002', 'products/technova-probook/thumb.jpg', 'https://cdn.example.com/products/technova-probook/thumb.jpg', 'THUMB',   0, FALSE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000003', 'products/technova-budpro/main.jpg',   'https://cdn.example.com/products/technova-budpro/main.jpg',   'MAIN',    0, TRUE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000004', 'products/technova-watch/main.jpg',    'https://cdn.example.com/products/technova-watch/main.jpg',    'MAIN',    0, TRUE),
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000002', 'products/technova-probook/thumb.jpg', 'https://d2g7rlpiy2vv8h.cloudfront.net/laptop.jpg', 'THUMB',   0, FALSE),
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000003', 'products/technova-budpro/main.jpg',   'https://d2g7rlpiy2vv8h.cloudfront.net/earbuds.jpg',   'THUMB',    0, TRUE),
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000004', 'products/technova-watch/main.jpg',    'https://d2g7rlpiy2vv8h.cloudfront.net/watch.jpg',    'THUMB',    0, TRUE),
     (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000005', 'products/stylecraft-polo/main.jpg',   'https://cdn.example.com/products/stylecraft-polo/main.jpg',   'MAIN',    0, TRUE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000006', 'products/stylecraft-joggers/main.jpg','https://cdn.example.com/products/stylecraft-joggers/main.jpg','MAIN',    0, TRUE),
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000006', 'products/stylecraft-joggers/main.jpg','https://d2g7rlpiy2vv8h.cloudfront.net/joggers.jpg','THUMB',    0, TRUE),
     (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000007', 'products/stylecraft-wallet/main.jpg', 'https://cdn.example.com/products/stylecraft-wallet/main.jpg', 'MAIN',    0, TRUE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000008', 'products/homebliss-purifier/main.jpg','https://cdn.example.com/products/homebliss-purifier/main.jpg','MAIN',    0, TRUE),
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000008', 'products/homebliss-purifier/main.jpg','https://d2g7rlpiy2vv8h.cloudfront.net/air_purifier.jpg','THUMB',    0, TRUE),
     (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000009', 'products/homebliss-cookware/main.jpg','https://cdn.example.com/products/homebliss-cookware/main.jpg','MAIN',    0, TRUE),
-    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000010', 'products/homebliss-coffee/main.jpg',  'https://cdn.example.com/products/homebliss-coffee/main.jpg',  'MAIN',    0, TRUE);
+    (gen_random_uuid(), 'a1000000-0000-0000-0000-000000000010', 'products/homebliss-coffee/main.jpg',  'https://d2g7rlpiy2vv8h.cloudfront.net/coffee.jpg',  'THUMB',    0, TRUE);
 
 -- ── Product Tags ──────────────────────────────────────────────────────────────
 INSERT INTO product_tags (product_id, tag) VALUES
