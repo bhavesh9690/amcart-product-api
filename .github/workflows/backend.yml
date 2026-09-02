@@ -76,3 +76,22 @@ jobs:
           echo "Docker image pushed successfully"
           echo "=========================================="
           echo "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      # 9. Update Kubernetes Deployment with new image
+      - name: Deploy New Image to EKS 
+        env: 
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "Deploying image:" echo "$IMAGE_URI"
+          
+      # 10. Deploy Image    
+      - name: Update kubeconfig (staging)
+        run: |
+          aws eks update-kubeconfig --name amcart-test-latest --region eu-north-1
+      - name: Deploy tagged image to staging EKS
+        run: |
+          kubectl set image deployment/product-service \
+            product-service=$IMAGE_URI \
+            -n ecommerce
+          kubectl rollout status deployment/product-service -n ecommerce
