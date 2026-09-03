@@ -36,4 +36,8 @@ public interface ProductRepository
     Page<Product> findRelatedProducts(@Param("categoryId") UUID categoryId,
                                      @Param("excludeId") UUID excludeId,
                                      Pageable pageable);
+
+    // Simple DB-based fallback search (name or description)
+    Page<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndActiveTrue(
+            String name, String description, Pageable pageable);
 }
