@@ -48,6 +48,7 @@ public class SecurityConfig {
                 // Public read-only product & category endpoints
                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/search/suggest", "/api/v1/search/suggest/**").permitAll()
                 // Everything else requires authentication
                 .anyRequest().authenticated()
             )
