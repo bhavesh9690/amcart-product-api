@@ -7,7 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;`r`nimport com.amcart.product.service.SearchService;
+import org.springframework.web.bind.annotation.RestController;
+import com.amcart.product.service.SearchService;
 
 @RestController
 @RequestMapping("/api/v1/search/suggest")
